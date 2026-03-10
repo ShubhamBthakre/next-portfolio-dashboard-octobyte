@@ -21,12 +21,14 @@ If evaluators require a distinct Google Finance source, the next step would be t
 
 ## 2. Rate limiting and blocking
 
-**Challenge:** Public or unofficial data sources can rate-limit or block repeated requests.
+**Challenge:** Public or unofficial data sources can rate-limit or block repeated requests. Yahoo Finance does not offer an official public API. During deployment on cloud infrastructure, requests from shared IP addresses may occasionally be rate limited (**HTTP 429**). The system mitigates this through **throttling**, **caching**, and **user-triggered retries**.
 
 **Solution:**
 
-- **Caching:** The backend uses **node-cache** with a 15-second TTL. Repeated requests for the same symbol within 15 seconds are served from memory, reducing calls to Yahoo.
+- **Throttling:** The backend fetches symbols sequentially with a delay between requests to avoid bursting Yahoo’s crumb/quote endpoints and triggering 429 on cloud platforms (e.g. Render).
+- **Caching:** The backend uses **node-cache** with a **60-second TTL**. Repeated requests for the same symbol within 60 seconds are served from memory, reducing calls to Yahoo.
 - **Frontend:** SWR is used with `refreshInterval: 15000` (15 seconds), so the dashboard refreshes periodically without hammering the API. Caching and this interval together limit request volume.
+- **Graceful fallback:** When no market data can be fetched (e.g. all requests 429), the API returns **503** with a clear error code; the frontend shows “Live market data temporarily unavailable” and a **“Try again”** button for user-triggered retry.
 - **Optional:** Adding express-rate-limit on the `/api/portfolio` route would protect the backend from abuse; we did not add it for the assignment but it is straightforward to add.
 
 ---
@@ -70,7 +72,7 @@ If evaluators require a distinct Google Finance source, the next step would be t
 | Challenge              | Approach                                                                 |
 |------------------------|--------------------------------------------------------------------------|
 | No official APIs       | yahoo-finance2 for CMP, P/E, EPS; optional Google later if required     |
-| Rate limiting          | Backend cache (15s TTL); frontend 15s refresh; optional API rate limit |
+| Rate limiting          | Throttling + backend cache (60s TTL); frontend 15s refresh; 503 + retry UI; optional API rate limit |
 | Partial failures       | try/catch per symbol; partial portfolio; 503 when no data               |
 | Data accuracy          | Clear labels; recommend disclaimer in production                        |
 | Portfolio % & sectors  | Full-portfolio percentage calculation; then group by sector            |

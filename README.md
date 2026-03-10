@@ -44,6 +44,10 @@ npm run build
 npm start
 ```
 
+## External API rate limiting (backend)
+
+The backend uses Yahoo Finance (unofficial). On cloud platforms (e.g. Render), Yahoo may return **429 Too Many Requests**. The backend uses **throttling**, **60s caching**, and returns **503** when no data is available. This frontend shows a specific “Live market data temporarily unavailable” message and a **“Try again”** button so users can retry. See the backend README for details.
+
 ## Tech stack
 
 - Next.js (App Router), React, TypeScript  
