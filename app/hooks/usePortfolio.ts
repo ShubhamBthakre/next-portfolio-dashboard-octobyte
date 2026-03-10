@@ -10,6 +10,13 @@ export function usePortfolio() {
     },
   );
 
+  const errorData = error?.response?.data as
+    | { code?: number; message?: string; content?: string }
+    | undefined;
+  const isMarketUnavailable =
+    error?.response?.status === 503 ||
+    errorData?.content === "MARKET_DATA_UNAVAILABLE";
+
   return {
     portfolio: data?.holdings ?? undefined,
     summary: data?.summary,
@@ -17,6 +24,7 @@ export function usePortfolio() {
     lastUpdated: data?.lastUpdated,
     loading: isLoading,
     error,
+    isMarketUnavailable: !!isMarketUnavailable,
     mutate,
   };
 }

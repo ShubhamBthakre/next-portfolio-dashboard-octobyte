@@ -11,7 +11,7 @@ import TopGainersLosers from "./components/TopGainersLosers";
 import PortfolioTable from "./components/PortfolioTable";
 
 export default function Home() {
-  const { portfolio, loading, error, mutate } = usePortfolio();
+  const { portfolio, loading, error, isMarketUnavailable, mutate } = usePortfolio();
 
   if (loading) {
     return (
@@ -29,17 +29,21 @@ export default function Home() {
       <main className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <p className="paragraph font-semibold text-foreground">
-            Unable to load portfolio
+            {isMarketUnavailable
+              ? "Live market data temporarily unavailable"
+              : "Unable to load portfolio"}
           </p>
           <p className="label text-card-label mt-1">
-            Check your connection and try again.
+            {isMarketUnavailable
+              ? "The data provider is rate-limiting. Please try again in a moment."
+              : "Check your connection and try again."}
           </p>
           <button
             type="button"
             onClick={() => mutate()}
             className="mt-4 paragraph px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-muted transition-colors font-semibold"
           >
-            Retry
+            Try again
           </button>
         </div>
       </main>
